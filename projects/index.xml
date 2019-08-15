@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Projects on André Bazaglia</title>
-    <link>http://localhost:8000/projects/</link>
+    <link>https://bazaglia.com/projects/</link>
     <description>Recent content in Projects on André Bazaglia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
     <lastBuildDate>Wed, 19 Aug 2015 20:29:37 -0700</lastBuildDate>
     
-	<atom:link href="http://localhost:8000/projects/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://bazaglia.com/projects/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Projects</title>
-      <link>http://localhost:8000/projects/projects/</link>
+      <link>https://bazaglia.com/projects/projects/</link>
       <pubDate>Wed, 19 Aug 2015 20:29:37 -0700</pubDate>
       
-      <guid>http://localhost:8000/projects/projects/</guid>
+      <guid>https://bazaglia.com/projects/projects/</guid>
       <description>This is a work in progress section</description>
     </item>
     

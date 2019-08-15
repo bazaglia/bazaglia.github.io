@@ -3,67 +3,67 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://localhost:8000/</loc>
+    <loc>https://bazaglia.com/</loc>
     <lastmod>2019-01-05T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://localhost:8000/blog/</loc>
+    <loc>https://bazaglia.com/blog/</loc>
     <lastmod>2019-01-05T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://localhost:8000/list-all-files-containing-a-string-from-terminal/</loc>
+    <loc>https://bazaglia.com/list-all-files-containing-a-string-from-terminal/</loc>
     <lastmod>2019-01-05T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>http://localhost:8000/categories/development/</loc>
-    <lastmod>2019-01-05T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://localhost:8000/tags/terminal/</loc>
+    <loc>https://bazaglia.com/categories/development/</loc>
     <lastmod>2019-01-05T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://localhost:8000/how-to-import-compressed-mysql-file-on-the-command-line/</loc>
+    <loc>https://bazaglia.com/tags/terminal/</loc>
+    <lastmod>2019-01-05T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bazaglia.com/how-to-import-compressed-mysql-file-on-the-command-line/</loc>
     <lastmod>2017-01-05T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>http://localhost:8000/tags/sql/</loc>
+    <loc>https://bazaglia.com/tags/sql/</loc>
     <lastmod>2017-01-05T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://localhost:8000/about/</loc>
+    <loc>https://bazaglia.com/about/</loc>
     <lastmod>2015-08-22T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>http://localhost:8000/projects/</loc>
+    <loc>https://bazaglia.com/projects/</loc>
     <lastmod>2015-08-19T20:29:37-07:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://localhost:8000/projects/projects/</loc>
+    <loc>https://bazaglia.com/projects/projects/</loc>
     <lastmod>2015-08-19T20:29:37-07:00</lastmod>
   </url>
   
   <url>
-    <loc>http://localhost:8000/home/</loc>
+    <loc>https://bazaglia.com/home/</loc>
   </url>
   
   <url>
-    <loc>http://localhost:8000/license/</loc>
+    <loc>https://bazaglia.com/license/</loc>
   </url>
   
 </urlset>
