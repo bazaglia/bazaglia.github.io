@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>André Bazaglia</title>
+    <link>http://localhost:8000/</link>
+    <description>Recent content on André Bazaglia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sat, 05 Jan 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="http://localhost:8000/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>List all files containing a string from Terminal</title>
+      <link>http://localhost:8000/list-all-files-containing-a-string-from-terminal/</link>
+      <pubDate>Sat, 05 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:8000/list-all-files-containing-a-string-from-terminal/</guid>
+      <description>Sometimes you may find it very useful to find any files containing a string. While most code editors provide this features when you add a folder as a project, you may be just navigating inside your terminal and need a quicker way to achieve that.
+The grep is a very powerful command for search patterns, and is available by default in most of Linux distro&amp;rsquo;s and also Mac.
+You may try, for example:</description>
+    </item>
+    
+    <item>
+      <title>How to import compressed MySQL file on the command line</title>
+      <link>http://localhost:8000/how-to-import-compressed-mysql-file-on-the-command-line/</link>
+      <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:8000/how-to-import-compressed-mysql-file-on-the-command-line/</guid>
+      <description>zcat restores compressed files to their original forms, while pv monitor the progress of data through a pipe (in other words, allows users to view a progress of a data through a pipeline).
+Combining these two commands we can import a compressed MySQL database while vieweing the progress.
+The final command is:
+zcat database.sql.gz | pv -cN zcat | mysql -u user -p dbname  In case it fails on your operational system, here&amp;rsquo;s a variation:</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>http://localhost:8000/about/</link>
+      <pubDate>Sat, 22 Aug 2015 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:8000/about/</guid>
+      <description>My focus over the last few years has been to contribute to the building of scalable and distributed systems but above all, keeping them that way. Technologies I&amp;rsquo;m currently working with include Golang, Node.js, Kafka, GraphQL and React Native.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>http://localhost:8000/projects/projects/</link>
+      <pubDate>Wed, 19 Aug 2015 20:29:37 -0700</pubDate>
+      
+      <guid>http://localhost:8000/projects/projects/</guid>
+      <description>This is a work in progress section</description>
+    </item>
+    
+    <item>
+      <title>Home</title>
+      <link>http://localhost:8000/home/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:8000/home/</guid>
+      <description>Hey, welcome to my blog! I am a brazilian developer currently based in Amsterdam. Here I write about code, software architecture and cool tech stuff I like.</description>
+    </item>
+    
+    <item>
+      <title>License</title>
+      <link>http://localhost:8000/license/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:8000/license/</guid>
+      <description>You can use this page to put a license on the contents of your blog, like so:
+ The MIT License (MIT)
+Copyright &amp;copy; 2015 André Bazagliaabazaglia@gmail.com
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &amp;ldquo;Software&amp;rdquo;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</description>
+    </item>
+    
+  </channel>
+</rss>

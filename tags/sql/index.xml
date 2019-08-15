@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>sql on André Bazaglia</title>
+    <link>http://localhost:8000/tags/sql/</link>
+    <description>Recent content in sql on André Bazaglia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="http://localhost:8000/tags/sql/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>How to import compressed MySQL file on the command line</title>
+      <link>http://localhost:8000/how-to-import-compressed-mysql-file-on-the-command-line/</link>
+      <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:8000/how-to-import-compressed-mysql-file-on-the-command-line/</guid>
+      <description>zcat restores compressed files to their original forms, while pv monitor the progress of data through a pipe (in other words, allows users to view a progress of a data through a pipeline).
+Combining these two commands we can import a compressed MySQL database while vieweing the progress.
+The final command is:
+zcat database.sql.gz | pv -cN zcat | mysql -u user -p dbname  In case it fails on your operational system, here&amp;rsquo;s a variation:</description>
+    </item>
+    
+  </channel>
+</rss>
