@@ -13,9 +13,9 @@
 <meta property="og:site_name" content="André Bazaglia" />
 <meta property="og:locale" content="en-US" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://bazaglia.com/categories/development/" />
-<meta property="og:title" content="development" />
-<meta property="twitter:title" content="development">
+<meta property="og:url" content="https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/" />
+<meta property="og:title" content="Clean architecture with TypeScript: DDD, Onion" />
+<meta property="twitter:title" content="Clean architecture with TypeScript: DDD, Onion">
 
     <meta property="og:image" content="https://bazaglia.com/img/banner.png">
     <meta property="twitter:card" content="summary">
@@ -27,10 +27,10 @@
 <title>
 
 
-     André Bazaglia - development 
+     André Bazaglia - Clean architecture with TypeScript: DDD, Onion 
 
 </title>
-<link rel="canonical" href="https://bazaglia.com/categories/development/">
+<link rel="canonical" href="https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/">
 
 
 <style media="screen">
@@ -1066,8 +1066,6 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
 
 
 
-  <link href="https://bazaglia.com/categories/development/index.xml" rel="alternate" type="application/rss+xml" title="André Bazaglia" />
-
 
 </head>
 
@@ -1075,7 +1073,7 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
 <body>
 
 
-<div class="header header-home column">
+<div class="header column">
 
     <div class="container">
         
@@ -1114,42 +1112,366 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
     </div>
 </div>
 
-<div class="main column">
+
+
+
+
+<div class="main post non-narrow zero-top-spacing column">
     <div class="container">
         <div class="content">
-            <div class="posts">
-                <div class="page-heading">Posts about development</div>
-                <ul>
-                    
-                        <li class="post-item">
-    <span class="meta">Jan 5, 2017</span>
-    
-    <a href="https://bazaglia.com/how-to-import-compressed-mysql-file-on-the-command-line/"><span>How to import compressed MySQL file on the command line</span></a>
-    
-</li>
+            <div class="front-matter">
+                <div class="title-container">
+                    <div class="page-heading">
 
-                    
-                        <li class="post-item">
-    <span class="meta">Jan 5, 2019</span>
     
-    <a href="https://bazaglia.com/list-all-files-containing-a-string-from-terminal/"><span>List all files containing a string from Terminal</span></a>
+    Clean architecture with TypeScript: DDD, Onion
     
-</li>
 
-                    
-                        <li class="post-item">
-    <span class="meta">Sep 29, 2019</span>
-    
-    <a href="https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/"><span>Clean architecture with TypeScript: DDD, Onion</span></a>
-    
-</li>
+</div>
 
+                </div>
+                <div class="meta">
+                    <div class="date" title="Sun Sep 29 2019 00:00:00 UTC">Sep 29, 2019</div>
                     
-                </ul>
+                        
+                        <div class="author middot" title="André Bazaglia">André Bazaglia</div>
+                        
+                    
+                    
+                    <div class="reading-time middot">8 minute read</div>
+                    
+                    
+                      <div class="tags">
+                    
+                        <ul>
+                          
+                            <li class="middot"><a href="https://bazaglia.com/tags/software-architecture">software architecture</a> </li>
+                          
+                        </ul>
+                    </div>
+                    <div class="tags">
+                        <ul>
+                          
+                          
+                        </ul>
+                    </div>
+                </div>
             </div>
+            <div class="markdown">
+                
+    
+    
+
+<h2 id="introduction">Introduction</h2>
+
+<p>During my 6+ years of professional experience, I had the opportunity of working in high tech companies that focus on efficient deliveries and take some concepts like availability and code quality very seriously. I had to deal with critical situations where bugs or system outages are inaceptable even if the impact is just a few seconds.</p>
+
+<p>The focus of this article is not to cover big topics like DDD and Onion Architecture, but to provide an example of how to implement these two patterns in TypeScript. While the project used for this example is just an introduction point, you might feel comfortable for enhancing it introducing other concepts inside this architecture such as CQRS.</p>
+
+<h2 id="why-ddd">Why DDD?</h2>
+
+<p>You should write software that implements exactly the business requirements.</p>
+
+<p>It makes it easy to test the domain layer, which means you can ensure all of your business rules are being respected and write long term bug-proof code. DDD together with Onion (covered on next topic) are a consistent way to avoid the cascade effect code, where you change one piece and the side effects are innumerable.</p>
+
+<h2 id="why-onion">Why Onion?</h2>
+
+<p>It plays well with DDD, as everything is built on top of a domain model, which is the first circle in the picture, the most inner one. There are no direct dependencies on external layers in internal ones, just by injection. Plus it is super flexible, as layers have its own responsibilities and input data are validated by each layer according to its needs, meaning inner layers will always receive valid input from outer layers. Not to mention testability: unit tests are way easier as you can use interfaces to provide to your classes mocked dependencies to not rely on external parts of the system such as databases when testing.</p>
+
+<p><figure class="progressive"><img class="progressive__img progressive--not-loaded" data-progressive="https://bazaglia.com/img/onion-architecture.png" src="https://bazaglia.com/img/low/onion-architecture.png" alt="Image of Onion Architecture" /></p></figure>
+
+<p>In TypeScript/Javascript, Inversion of Control (by Dependency Injection) means we are injecting/passing things as params instead of importing. In the following code examples, we are gonna use a library called Inversify, that allows us to declare dependencies using decorators to create classes that later can have dynamically created containers for resolving its dependencies.</p>
+
+<h2 id="the-architecture">The architecture</h2>
+
+<h3 id="for-this-sample-application">For this sample application&hellip;</h3>
+
+<p>We&rsquo;re building a simple shopping cart application, where there are products (items) which can be added to a shopping cart. The cart may have some business rules, like minimum/maximum quantity of a unique item.</p>
+
+<p>Let&rsquo;s dive into the layers of the application now, starting from the inner and going to the outer ones, in sequence.</p>
+
+<h3 id="domain">Domain</h3>
+
+<p>The domain layer is basically where all the business rules live. It doesn&rsquo;t know any other layer, therefore, has no dependencies, and is the easier to test. Even if you change all your application around, the domain is still intact, as all it contains are business rules that anyone can read to understand what is desired by your application. It might also be where you want to start testing.</p>
+
+<p>What we have here is a base abstract class called Entity, and the reason for that is you can have some logic in the Entity that is common to all the domain classes. In this example, the common logic I have is generating a collision-resistant ID optimized for horizontal scaling, which mean for all my entities I will use the same strategy.</p>
+
+<pre><code class="language-typescript">export abstract class Entity&lt;T&gt; {
+  protected readonly _id: string
+  protected props: T
+
+  constructor(props: T, id?: string) {
+    this._id = id ? id : UniqueEntityID()
+    this.props = props
+  }
+
+  // other common methods here...
+}
+</code></pre>
+
+<p>With the Entity class already defined in our codebase, we&rsquo;re ready to create our domain class, which is extending the abstract class Entity.</p>
+
+<p>There&rsquo;s nothing too complex on this class, but there are some interesting points you should give a special look at.</p>
+
+<p>First, the constructor is private, which means <code>new Cart()</code> would fail, and this is the expected behavior. Again, as we are doing DDD, it is a nice practice to keep the domain class always at a valid state. Instead of directly instantiating an empty Cart object, we are using the Factory design pattern that returns an instance of the Cart class. Some validation could be made to ensure the creation is receiving all the required attributes. Similarly, we have getters and setters to provide all the interactions with the domain, and this is the reason why the class internal attributes/state is in an object (called <code>props</code> in this example), and the getters exposes the attributes that need to be public, as well as the public setters and methods that enable us to operates on the domain, guaranteeing its internal properties to always change to a valid state.</p>
+
+<p>After all, the most important thing you should realize here is: <strong>The domain responsibility is to focus on behaviors, not properties.</strong></p>
+
+<pre><code class="language-typescript">export class Cart extends Entity&lt;ICartProps&gt; {
+  private constructor({ id, ...data }: ICartProps) {
+    super(data, id)
+  }
+
+  public static create(props: ICartProps): Cart {
+    const instance = new Cart(props)
+    return instance
+  }
+
+  public unmarshal(): UnmarshalledCart {
+    return {
+      id: this.id,
+      products: this.products.map(product =&gt; ({
+        item: product.item.unmarshal(),
+        quantity: product.quantity
+      })),
+      totalPrice: this.totalPrice
+    }
+  }
+
+  private static validQuantity(quantity: number) {
+    return quantity &gt;= 1 &amp;&amp; quantity &lt;= 1000
+  }
+
+  private setProducts(products: CartItem[]) {
+    this.props.products = products
+  }
+
+  get id(): string {
+    return this._id
+  }
+
+  get products(): CartItem[] {
+    return this.props.products
+  }
+
+  get totalPrice(): number {
+    const cartSum = (acc: number, product: CartItem) =&gt; {
+      return acc + product.item.price * product.quantity
+    }
+
+    return this.products.reduce(sum, 0)
+  }
+
+  public add(item: Item, quantity: number) {
+    if (!Cart.validQuantity(quantity)) {
+      throw new ValidationError(
+        'SKU needs to have a quantity between 1 and 1000'
+      )
+    }
+
+    const index = this.products.findIndex(
+      product =&gt; product.item.sku === item.sku
+    )
+
+    if (index &gt; -1) {
+      const product = {
+        ...this.products[index],
+        quantity: this.products[index].quantity + quantity
+      }
+
+      if (!Cart.validQuantity(product.quantity)) {
+        throw new ValidationError('SKU exceeded allowed quantity')
+      }
+
+      const products = [
+        ...this.products.slice(0, index),
+        product,
+        ...this.products.slice(index + 1)
+      ]
+
+      return this.setProducts(products)
+    }
+
+    const products = [...this.products, { item, quantity }]
+    this.setProducts(products)
+  }
+
+  public remove(itemId: string) {
+    const products = this.products.filter(product =&gt; product.item.id !== itemId)
+    this.setProducts(products)
+    this.emitCartMutation()
+  }
+
+  public empty() {
+    this.setProducts([])
+  }
+}
+</code></pre>
+
+<p>While our Cart object can be operated using the domain methods across the entire application, eventually we might need to unmarshal it to a plain object: where we save it on the database or want to return a JSON response to a client. This can be easily achieved calling the method <code>unmarshall()</code>.</p>
+
+<p>Thinking of flexibility for elegant architectures, the domain layer is also where domain events are triggered. Event Sourcing might be implemented here, with events being emitted when the domain entity changes.</p>
+
+<h3 id="use-cases">Use cases</h3>
+
+<p>Mainly we will compose our domain methods here, and eventually, use what was injected from the infrastructure layer to persist data.</p>
+
+<p>We&rsquo;re using a library called <code>inversify</code> for enabling Inversion of Control pattern, that is injecting a repository from infrastructure layer into this use case, enabling us to call the domain method to manipulate the cart and persist it in a database just after.</p>
+
+<pre><code class="language-typescript">import { inject, injectable } from 'inversify'
+
+@injectable()
+export class CartService {
+  @inject(TYPES.CartRepository) private repository: CartRepository
+
+  private async _getCart(id: string): Promise&lt;Cart&gt; {
+    try {
+      const cart = await this.repository.getById(id)
+      return cart
+    } catch (e) {
+      const emptyCart = Cart.create({ id, products: [] })
+      return this.repository.create(emptyCart)
+    }
+  }
+
+  public getById(id: string): Promise&lt;Cart&gt; {
+    return this.repository.getById(id)
+  }
+
+  public async add(cartId: string, item: Item, sku: number): Promise&lt;Cart&gt; {
+    const cart = await this._getCart(cartId)
+    cart.add(item, sku)
+
+    return this.repository.update(cart)
+  }
+
+  public async remove(cartId: string, itemId: string): Promise&lt;Cart&gt; {
+    const cart = await this._getCart(cartId)
+    cart.remove(itemId)
+
+    return this.repository.update(cart)
+  }
+}
+</code></pre>
+
+<p>This layer is responsible only for operating the application. Changes made in the code here does not affect/break the entities or external dependencies such as databases.</p>
+
+<h3 id="infrastructure">Infrastructure</h3>
+
+<p>Even though at this point it might be very clear, but the infrastructure layer is responsible for every communication with external systems such as the system state (a database).</p>
+
+<p>For saving data into the database, I use a mapper/repository approach.</p>
+
+<p>A mapper can fetch raw database data and handle transformation to the matching domain class:</p>
+
+<pre><code class="language-typescript">import { Cart, CartItem } from 'src/domain/cart'
+
+const getProducts = (products: CartItem[]) =&gt; {
+  return products.map(product =&gt; ({
+    item: product.item,
+    quantity: product.quantity
+  }))
+}
+
+export class CartMapper {
+  public static toDomain(raw: any): Cart {
+    return Cart.create({
+      id: raw.id,
+      couponCode: raw.couponCode,
+      products: getProducts(raw.products || [])
+    })
+  }
+}
+</code></pre>
+
+<p>And the repository itself may depend on a database client library, which is a simple memory storage for this example, and use its methods for manipulating the data:</p>
+
+<pre><code class="language-typescript">import { injectable, inject } from 'inversify'
+import { Cart } from 'src/domain/cart'
+import { CartMapper } from '../mappers/cart'
+
+interface ICartRepository {
+  getById(id: string): Promise&lt;Cart&gt;
+  create(cart: Cart): Promise&lt;Cart&gt;
+  update(cart: Cart): Promise&lt;Cart&gt;
+}
+
+@injectable()
+export class CartRepository implements ICartRepository {
+  @inject(TYPES.Database) private _database: MemoryData
+
+  async getById(id: string): Promise&lt;Cart&gt; {
+    const cart = await this._database.cart.getById(id)
+    if (!cart) {
+      throw new ResourceNotFound('Cart', { id })
+    }
+    return CartMapper.toDomain(cart)
+  }
+
+  async create(cart: Cart): Promise&lt;Cart&gt; {
+    const dtoCart = cart.unmarshal()
+    const inserted = await this._database.cart.insert(dtoCart)
+    return CartMapper.toDomain(inserted)
+  }
+
+  async update(cart: Cart): Promise&lt;Cart&gt; {
+    const dtoCart = cart.unmarshal()
+    const updated = await this._database.cart.update(cart.id, dtoCart)
+    return CartMapper.toDomain(updated)
+  }
+}
+</code></pre>
+
+<p>There is still space for improvements here. The code is just was made for quick demonstration porpuses, but one improvement for a good Onion would be having the interface for the repository defined inside the domain, and the implementation itself in the infrastructure layer we will discuss later.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>The source code for this project is available at <a href="https://github.com/bazaglia/shopping-cart">Github</a>.</p>
+
+
+            </div>
+            
+            <br>
+            <div class="share">
+                  
+                  <a href="" class="ssk ssk-facebook"></a>
+                  
+                  
+                  <a href="" class="ssk ssk-twitter"></a>
+                  
+                  
+                  
+                  <a href="" class="ssk ssk-linkedin"></a>
+                  
+            </div>
+            
+            
+            <br>
+            <div class="navigation">
+                
+                <div>
+                    <img class="icon" src="https://bazaglia.com/img/back.svg" alt="back" />
+                    <a href="https://bazaglia.com/list-all-files-containing-a-string-from-terminal/">List all files containing a string from Terminal</a>
+                </div>
+                
+                <div style="width: 100%;"></div>
+                
+            </div>
+            
+            
+
+            
+            
+
+            
+
+            
         </div>
     </div>
 </div>
+
+
+
 <div class="footer column">
     <div class="container">
 

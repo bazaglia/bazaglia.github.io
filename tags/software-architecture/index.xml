@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>software architecture on André Bazaglia</title>
+    <link>https://bazaglia.com/tags/software-architecture/</link>
+    <description>Recent content in software architecture on André Bazaglia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sun, 29 Sep 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://bazaglia.com/tags/software-architecture/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Clean architecture with TypeScript: DDD, Onion</title>
+      <link>https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/</link>
+      <pubDate>Sun, 29 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/</guid>
+      <description>Introduction During my 6+ years of professional experience, I had the opportunity of working in high tech companies that focus on efficient deliveries and take some concepts like availability and code quality very seriously. I had to deal with critical situations where bugs or system outages are inaceptable even if the impact is just a few seconds.
+The focus of this article is not to cover big topics like DDD and Onion Architecture, but to provide an example of how to implement these two patterns in TypeScript.</description>
+    </item>
+    
+  </channel>
+</rss>

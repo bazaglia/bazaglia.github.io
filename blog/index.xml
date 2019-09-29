@@ -6,10 +6,20 @@
     <description>Recent content in Blog on André Bazaglia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sat, 05 Jan 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 29 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://bazaglia.com/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Clean architecture with TypeScript: DDD, Onion</title>
+      <link>https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/</link>
+      <pubDate>Sun, 29 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/</guid>
+      <description>Introduction During my 6+ years of professional experience, I had the opportunity of working in high tech companies that focus on efficient deliveries and take some concepts like availability and code quality very seriously. I had to deal with critical situations where bugs or system outages are inaceptable even if the impact is just a few seconds.
+The focus of this article is not to cover big topics like DDD and Onion Architecture, but to provide an example of how to implement these two patterns in TypeScript.</description>
+    </item>
     
     <item>
       <title>List all files containing a string from Terminal</title>
