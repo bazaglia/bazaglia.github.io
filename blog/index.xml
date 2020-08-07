@@ -17,7 +17,7 @@
       <pubDate>Sun, 29 Sep 2019 00:00:00 +0000</pubDate>
       
       <guid>https://bazaglia.com/clean-architecture-with-typescript-ddd-onion/</guid>
-      <description>Introduction Writing maintainable code should be taken into consideration as it is as important as scalability, resilience, and other infrastructure aspects when you have your application running in production. There are many architectural principles that a maintainable code implements, and the source code for the project structure that we will go through this article is available in a Github repository at the end of the post.
+      <description>Introduction Writing maintainable code should be taken into consideration as it is as important as scalability, resilience, and other infrastructure aspects when you have your application running in production. There are many architectural principles that a maintainable code implements, and the source code for the project structure that we will go through in this article is available in a Github repository at the end of the post.
 The focus of this article is not to cover big topics like DDD and Onion Architecture, but to provide an example of how to implement these two patterns in TypeScript.</description>
     </item>
     
