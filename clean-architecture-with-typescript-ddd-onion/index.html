@@ -959,12 +959,6 @@ margin-left: -4%;
 
 
   <style type="text/css" media="screen">
-    .hljs{display:block;background:white;padding:0.5em;color:#333333;overflow-x:auto}.hljs-comment,.hljs-meta{color:#969896}.hljs-string,.hljs-variable,.hljs-template-variable,.hljs-strong,.hljs-emphasis,.hljs-quote{color:#df5000}.hljs-keyword,.hljs-selector-tag,.hljs-type{color:#a71d5d}.hljs-literal,.hljs-symbol,.hljs-bullet,.hljs-attribute{color:#0086b3}.hljs-section,.hljs-name{color:#63a35c}.hljs-tag{color:#333333}.hljs-title,.hljs-attr,.hljs-selector-id,.hljs-selector-class,.hljs-selector-attr,.hljs-selector-pseudo{color:#795da3}.hljs-addition{color:#55a532;background-color:#eaffea}.hljs-deletion{color:#bd2c00;background-color:#ffecec}.hljs-link{text-decoration:underline}
-  </style>
-
-
-
-  <style type="text/css" media="screen">
     .progressive{overflow:hidden;position:relative;background:#efefef}.progressive__img{width:100%;height:100%;transform:translateZ(0)}.progressive--not-loaded{filter:blur(30px)}.progressive--is-loaded{filter:blur(20px);animation:a .5s both}@keyframes a{0%{filter:blur(20px)}to{filter:blur(0)}}
 
   </style>
@@ -1113,8 +1107,6 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
 
 
 
-
-
 <div class="main post non-narrow zero-top-spacing column">
     <div class="container">
         <div class="content">
@@ -1196,12 +1188,12 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
 <p>To implement our domain layer, we start with a base abstract class called Entity, that other domain classes can extend. The reason for that is you can have some logic in the Entity that is common to all of the domain classes. In this example, the common logic is to generate a collision-resistant ID optimized for horizontal scaling, which means for all of our entities, we will use the same strategy.</p>
 
 <pre><code class="language-typescript">export abstract class Entity&lt;T&gt; {
-  protected readonly _id: string
-  protected props: T
+  protected readonly _id: string;
+  protected props: T;
 
   constructor(props: T, id?: string) {
-    this._id = id ? id : UniqueEntityID()
-    this.props = props
+    this._id = id ? id : UniqueEntityID();
+    this.props = props;
   }
 
   // other common methods here...
@@ -1217,16 +1209,16 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
 <p>After all, the most important thing you should realize here is: <strong>The domain responsibility is to focus on behaviors, not properties.</strong></p>
 
 <pre><code class="language-typescript">export class Cart extends Entity&lt;CartProps&gt; {
-  private _products: CartItem[]
+  private _products: CartItem[];
 
   private constructor({ id, ...data }: CartProps) {
-    super(data, id)
+    super(data, id);
   }
 
   public static create(props: CartProps): Cart {
-    const instance = new Cart(props)
-    instance.products = instance.props.rawProducts || []
-    return instance
+    const instance = new Cart(props);
+    instance.products = instance.props.rawProducts || [];
+    return instance;
   }
 
   public unmarshal(): UnmarshalledCart {
@@ -1237,76 +1229,76 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
         quantity: product.quantity,
       })),
       totalPrice: this.totalPrice,
-    }
+    };
   }
 
   private static validQuantity(quantity: number) {
-    return quantity &gt;= 1 &amp;&amp; quantity &lt;= 1000
+    return quantity &gt;= 1 &amp;&amp; quantity &lt;= 1000;
   }
 
   get id(): string {
-    return this._id
+    return this._id;
   }
 
   get totalPrice(): number {
     const sum = (acc: number, product: CartItem) =&gt; {
-      return acc + product.item.price * product.quantity
-    }
+      return acc + product.item.price * product.quantity;
+    };
 
-    return this.products.reduce(sum, 0)
+    return this.products.reduce(sum, 0);
   }
 
   get products(): CartItem[] {
-    return this._products
+    return this._products;
   }
 
   set products(products: CartItem[] | UnmarshalledCartItem[]) {
     this._products = products.map((p) =&gt; ({
       item: p.item instanceof Item ? p.item : Item.create(p.item),
       quantity: p.quantity,
-    }))
+    }));
   }
 
   public add(item: Item, quantity: number): void {
     if (!Cart.validQuantity(quantity)) {
       throw new ValidationError(
-        'SKU needs to have a quantity between 1 and 1000',
-      )
+        'SKU needs to have a quantity between 1 and 1000'
+      );
     }
 
-    const index = this.products.findIndex((p) =&gt; p.item.sku === item.sku)
+    const index = this.products.findIndex((p) =&gt; p.item.sku === item.sku);
 
     if (index &gt; -1) {
       const product = {
         ...this.products[index],
         quantity: this.products[index].quantity + quantity,
-      }
+      };
 
       if (!Cart.validQuantity(product.quantity)) {
-        throw new ValidationError('SKU exceeded allowed quantity')
+        throw new ValidationError('SKU exceeded allowed quantity');
       }
 
       const products = [
         ...this.products.slice(0, index),
         product,
         ...this.products.slice(index + 1),
-      ]
+      ];
 
-      this.products = products
+      this.products = products;
     } else {
-      this.products = [...this.products, { item, quantity }]
+      this.products = [...this.products, { item, quantity }];
     }
   }
 
   public remove(itemId: string): void {
     const products = this.products.filter(
-      (product) =&gt; product.item.id !== itemId,
-    )
-    this.products = products
+      (product) =&gt; product.item.id !== itemId
+    );
+    this.products = products;
   }
 
   public empty(): void {
-    this.products = []
+    this.products = [];
   }
 }
 </code></pre>
@@ -1321,45 +1313,45 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
 
 <p>We are using a library called <code>inversify</code> for enabling Inversion of Control pattern, that is injecting a repository from the infrastructure layer (to be shown later) into this use case. This allow us us to call the domain methods to manipulate the cart, and then persist it in a database by calling the repository methods.</p>
 
-<pre><code class="language-typescript">import { inject, injectable } from 'inversify'
+<pre><code class="language-typescript">import { inject, injectable } from 'inversify';
 
 @injectable()
 export class CartService {
-  @inject(TYPES.CartRepository) private repository: CartRepository
+  @inject(TYPES.CartRepository) private repository: CartRepository;
 
   private async _getCart(id: string): Promise&lt;Cart&gt; {
     try {
-      const cart = await this.repository.getById(id)
-      return cart
+      const cart = await this.repository.getById(id);
+      return cart;
     } catch (e) {
-      const emptyCart = Cart.create({ id })
-      return this.repository.create(emptyCart)
+      const emptyCart = Cart.create({ id });
+      return this.repository.create(emptyCart);
     }
   }
 
   public getById(id: string): Promise&lt;Cart&gt; {
-    return this.repository.getById(id)
+    return this.repository.getById(id);
   }
 
   public async add(cartId: string, item: Item, sku: number): Promise&lt;Cart&gt; {
-    const cart = await this._getCart(cartId)
-    cart.add(item, sku)
+    const cart = await this._getCart(cartId);
+    cart.add(item, sku);
 
-    return this.repository.update(cart)
+    return this.repository.update(cart);
   }
 
   public async remove(cartId: string, itemId: string): Promise&lt;Cart&gt; {
-    const cart = await this._getCart(cartId)
-    cart.remove(itemId)
+    const cart = await this._getCart(cartId);
+    cart.remove(itemId);
 
-    return this.repository.update(cart)
+    return this.repository.update(cart);
   }
 
   public async empty(cartId: string): Promise&lt;Cart&gt; {
-    const cart = await this._getCart(cartId)
-    cart.empty()
+    const cart = await this._getCart(cartId);
+    cart.empty();
 
-    return this.repository.update(cart)
+    return this.repository.update(cart);
   }
 }
 </code></pre>
@@ -1373,46 +1365,46 @@ export class CartService {
 <p>The repository might depend on a database client library, and is responsible for manipulating the data in the database/persistence layer. The idea is to first define an interface for the repository operations. The interface can be put together with the domain layer, while its implementation stays in the infrastructure.</p>
 
 <pre><code class="language-typescript">export interface CartRepository {
-  getById(id: string): Promise&lt;Cart&gt;
-  create(cart: Cart): Promise&lt;Cart&gt;
-  update(cart: Cart): Promise&lt;Cart&gt;
+  getById(id: string): Promise&lt;Cart&gt;;
+  create(cart: Cart): Promise&lt;Cart&gt;;
+  update(cart: Cart): Promise&lt;Cart&gt;;
 }
 </code></pre>
 
 <p>The repository we will create is going to implement the above interface storing data in the memory. We first create our own class called <code>MemoryData</code> that will implement some basic operations that will be used later by our repository.</p>
 
-<pre><code class="language-typescript">import { injectable } from 'inversify'
-import cuid from 'cuid'
+<pre><code class="language-typescript">import { injectable } from 'inversify';
+import cuid from 'cuid';
 
 class Collection {
-  private data: Record&lt;string, unknown&gt; = {}
+  private data: Record&lt;string, unknown&gt; = {};
 
   async findAll&lt;T extends { id: string }&gt;(): Promise&lt;T[]&gt; {
     return Object.entries(this.data).map(([key, value]) =&gt; ({
       id: key,
       ...(value as Record&lt;string, unknown&gt;),
-    })) as T[]
+    })) as T[];
   }
 
   async getById&lt;T&gt;(id: string): Promise&lt;T&gt; {
-    return this.data[id] as T
+    return this.data[id] as T;
   }
 
   async insert&lt;T extends { id?: string }&gt;(value: T): Promise&lt;T&gt; {
-    this.data[value.id || cuid()] = value
-    return value
+    this.data[value.id || cuid()] = value;
+    return value;
   }
 
   async update&lt;T&gt;(id: string, value: T): Promise&lt;T&gt; {
-    this.data[id] = value
-    return this.data[id] as T
+    this.data[id] = value;
+    return this.data[id] as T;
   }
 }
 
 @injectable()
 export class MemoryData {
-  public items = new Collection()
-  public cart = new Collection()
+  public items = new Collection();
+  public cart = new Collection();
 }
 </code></pre>
 
@@ -1420,21 +1412,21 @@ export class MemoryData {
 
 <p>We first create our mapper. It receives the raw database data and handles the transformation to the matching domain class:</p>
 
-<pre><code class="language-typescript">import { Cart, CartItem } from 'src/domain/cart'
+<pre><code class="language-typescript">import { Cart, CartItem } from 'src/domain/cart';
 
 const getProducts = (products: UnmarshalledCartItem[]) =&gt; {
   return products.map((product) =&gt; ({
     item: product.item,
     quantity: product.quantity,
-  }))
-}
+  }));
+};
 
 export class CartMapper {
   public static toDomain(raw: UnmarshalledCart): Cart {
     return Cart.create({
       id: raw.id,
       rawProducts: getProducts(raw.products || []),
-    })
+    });
   }
 }
 </code></pre>
@@ -1443,30 +1435,32 @@ export class CartMapper {
 
 <pre><code class="language-typescript">@injectable()
 export class CartMemoryRepository implements CartRepository {
-  @inject(TYPES.Database) private _database: MemoryData
+  @inject(TYPES.Database) private _database: MemoryData;
 
   async getById(id: string): Promise&lt;Cart&gt; {
-    const cart = await this._database.cart.getById&lt;UnmarshalledCart&gt;(id)
+    const cart = await this._database.cart.getById&lt;UnmarshalledCart&gt;(id);
     if (!cart) {
-      throw new ResourceNotFound('Cart', { id })
+      throw new ResourceNotFound('Cart', { id });
     }
-    return CartMapper.toDomain(cart)
+    return CartMapper.toDomain(cart);
   }
 
   async create(cart: Cart): Promise&lt;Cart&gt; {
-    const dtoCart = cart.unmarshal()
-    const inserted = await this._database.cart.insert&lt;UnmarshalledCart&gt;(dtoCart)
-    return CartMapper.toDomain(inserted)
+    const dtoCart = cart.unmarshal();
+    const inserted = await this._database.cart.insert&lt;UnmarshalledCart&gt;(
+      dtoCart
+    );
+    return CartMapper.toDomain(inserted);
   }
 
   async update(cart: Cart): Promise&lt;Cart&gt; {
-    const dtoCart = cart.unmarshal()
+    const dtoCart = cart.unmarshal();
     const updated = await this._database.cart.update&lt;UnmarshalledCart&gt;(
       cart.id,
-      dtoCart,
-    )
+      dtoCart
+    );
 
-    return CartMapper.toDomain(updated)
+    return CartMapper.toDomain(updated);
   }
 }
 </code></pre>
@@ -1481,56 +1475,56 @@ export class CartMemoryRepository implements CartRepository {
 
 <pre><code class="language-typescript">@injectable()
 export class HTTPController {
-  @inject(TYPES.ItemService) private _itemService: ItemService
-  @inject(TYPES.CartService) private _cartService: CartService
+  @inject(TYPES.ItemService) private _itemService: ItemService;
+  @inject(TYPES.CartService) private _cartService: CartService;
 
   public async listItems(ctx: RouterContext): Promise&lt;void&gt; {
-    const items = await this._itemService.findAll()
-    ctx.body = items.map((item) =&gt; item.unmarshal())
+    const items = await this._itemService.findAll();
+    ctx.body = items.map((item) =&gt; item.unmarshal());
   }
 
   public async getItem(ctx: RouterContext): Promise&lt;void&gt; {
-    const item = await this._itemService.getById(ctx.params.id)
-    ctx.body = item.unmarshal()
+    const item = await this._itemService.getById(ctx.params.id);
+    ctx.body = item.unmarshal();
   }
 
   public async createItem(ctx: RouterContext): Promise&lt;void&gt; {
     const input = validateCreateItem(
-      ctx.request.body as Record&lt;string, unknown&gt;,
-    )
-    const item = Item.create(input)
-    const created = await this._itemService.create(item)
+      ctx.request.body as Record&lt;string, unknown&gt;
+    );
+    const item = Item.create(input);
+    const created = await this._itemService.create(item);
 
-    ctx.body = created.unmarshal()
+    ctx.body = created.unmarshal();
   }
 
   public async getCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const cart = await this._cartService.getById(ctx.params.id)
-    ctx.body = cart.unmarshal()
+    const cart = await this._cartService.getById(ctx.params.id);
+    ctx.body = cart.unmarshal();
   }
 
   public async addToCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const { cartId } = ctx.params
+    const { cartId } = ctx.params;
     const { itemId, quantity } = validateAddToCart(
-      ctx.request.body as Record&lt;string, unknown&gt;,
-    )
+      ctx.request.body as Record&lt;string, unknown&gt;
+    );
 
-    const item = await this._itemService.getById(itemId)
-    const cart = await this._cartService.add(cartId, item, quantity)
+    const item = await this._itemService.getById(itemId);
+    const cart = await this._cartService.add(cartId, item, quantity);
 
-    ctx.body = cart.unmarshal()
+    ctx.body = cart.unmarshal();
   }
 
   public async removeFromCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const { cartId, itemId } = ctx.params
-    const cart = await this._cartService.remove(cartId, itemId)
-    ctx.body = cart.unmarshal()
+    const { cartId, itemId } = ctx.params;
+    const cart = await this._cartService.remove(cartId, itemId);
+    ctx.body = cart.unmarshal();
   }
 
   public async emptyCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const { cartId } = ctx.params
-    await this._cartService.empty(cartId)
-    ctx.body = null
+    const { cartId } = ctx.params;
+    await this._cartService.empty(cartId);
+    ctx.body = null;
   }
 }
 </code></pre>
@@ -1539,7 +1533,7 @@ export class HTTPController {
 
 <pre><code class="language-typescript">@injectable()
 export class HTTPRouter {
-  @inject(TYPES.HTTPController) private _controller: HTTPController
+  @inject(TYPES.HTTPController) private _controller: HTTPController;
 
   get(): Router {
     return new Router()
@@ -1548,14 +1542,14 @@ export class HTTPRouter {
       .post('/item', (ctx: RouterContext) =&gt; this._controller.createItem(ctx))
       .get('/cart/:id', (ctx: RouterContext) =&gt; this._controller.getCart(ctx))
       .post('/cart/:cartId/item', (ctx: RouterContext) =&gt;
-        this._controller.addToCart(ctx),
+        this._controller.addToCart(ctx)
       )
       .delete('/cart/:cartId/item/:itemId', (ctx: RouterContext) =&gt;
-        this._controller.removeFromCart(ctx),
+        this._controller.removeFromCart(ctx)
       )
       .post('/cart/:cartId/clean', (ctx: RouterContext) =&gt;
-        this._controller.emptyCart(ctx),
-      )
+        this._controller.emptyCart(ctx)
+      );
   }
 }
 </code></pre>
@@ -1564,39 +1558,39 @@ export class HTTPRouter {
 
 <pre><code class="language-typescript">@injectable()
 export class Server {
-  @inject(TYPES.HTTPRouter) private _router: HTTPRouter
-  @inject(TYPES.Logger) private _logger: Logger
+  @inject(TYPES.HTTPRouter) private _router: HTTPRouter;
+  @inject(TYPES.Logger) private _logger: Logger;
 
   start(): void {
-    const router = this._router.get()
-    const logger = this._logger.get()
-    const env = String(process.env)
+    const router = this._router.get();
+    const logger = this._logger.get();
+    const env = String(process.env);
 
     router.get('/robots.txt', (ctx) =&gt; {
-      ctx.body = 'User-Agent: *\nDisallow: /'
-    })
+      ctx.body = 'User-Agent: *\nDisallow: /';
+    });
 
     router.get('/health', (ctx) =&gt; {
-      ctx.body = 'OK'
-    })
+      ctx.body = 'OK';
+    });
 
-    const app = new Koa()
+    const app = new Koa();
 
-    app.use(cors())
-    app.use(bodyParser())
-    app.use(compress())
+    app.use(cors());
+    app.use(bodyParser());
+    app.use(compress());
 
-    app.use(env === 'production' ? errorHandler : devErrorHandler)
+    app.use(env === 'production' ? errorHandler : devErrorHandler);
 
-    app.use(router.routes())
+    app.use(router.routes());
 
     app.on('error', (err) =&gt; {
       if (process.env.NODE_ENV !== 'test') {
-        logger.error(err)
+        logger.error(err);
       }
-    })
+    });
 
-    app.listen(3000)
+    app.listen(3000);
   }
 }
 </code></pre>
@@ -1652,13 +1646,6 @@ export class Server {
             </div>
             
             
-
-            
-            
-
-            
-
-            
         </div>
     </div>
 </div>
@@ -1674,7 +1661,7 @@ export class Server {
 
         
             
-                <a href="https://bazaglia.com/license">Copyright © 2014-2022 André Bazaglia</a>
+                <a href="https://bazaglia.com/license">Copyright © 2014-2023 André Bazaglia</a>
             
         
 
@@ -1741,11 +1728,6 @@ export class Server {
 
 
 
-  <script src="https://bazaglia.com/js/highlight.min.js" defer></script>
-  
-
-
-
   <script src="https://bazaglia.com/js/progressively.min.js" defer></script>
 
 
@@ -1755,13 +1737,8 @@ export class Server {
 
 
 
-
-
 <script>
   window.onload = function() {
-    
-      hljs.initHighlighting();
-    
     
       progressively.init({delay: 30, throttle: 50});
     
