@@ -1152,16 +1152,10 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
                 
     
     <p>Sometimes you may find it very useful to find any files containing a string. While most code editors provide this features when you add a folder as a project, you may be just navigating inside your terminal and need a quicker way to achieve that.</p>
-
 <p>The <code>grep</code> is a very powerful command for search patterns, and is available by default in most of Linux distro&rsquo;s and also Mac.</p>
-
 <p>You may try, for example:</p>
-
-<pre><code>grep -Ril &quot;string you're looking for here&quot; /path/to/dir
-</code></pre>
-
-<p>Going deeper into the params, we&rsquo;re passing <code>-Ril</code>, where <code>R</code> means recursion (find in all subdirectories), <code>i</code> means make it case insensitive, and <code>l</code> make it returns only the name of the file, not the content of it, making it more visible to read in your Terminal output.</p>
-
+<pre tabindex="0"><code>grep -Ril &#34;string you&#39;re looking for here&#34; /path/to/dir
+</code></pre><p>Going deeper into the params, we&rsquo;re passing <code>-Ril</code>, where <code>R</code> means recursion (find in all subdirectories), <code>i</code> means make it case insensitive, and <code>l</code> make it returns only the name of the file, not the content of it, making it more visible to read in your Terminal output.</p>
 <p>You can always find the complete list of options available running <code>man grep</code>.</p>
 
 

@@ -1152,20 +1152,12 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
                 
     
     <p><code>zcat</code> restores compressed files to their original forms, while <code>pv</code> monitor the progress of data through a pipe (in other words, allows users to view a progress of a data through a pipeline).</p>
-
 <p>Combining these two commands we can import a compressed MySQL database while vieweing the progress.</p>
-
 <p>The final command is:</p>
-
-<pre><code>zcat database.sql.gz | pv -cN zcat | mysql -u user -p dbname
-</code></pre>
-
-<p>In case it fails on your operational system, here&rsquo;s a variation:</p>
-
-<pre><code>pv bigdump.sql.gz | gunzip | mysql -u user -p dbname
-</code></pre>
-
-<p>In case MySQL data is a full dump, the <code>dbname</code> can be ommited.</p>
+<pre tabindex="0"><code>zcat database.sql.gz | pv -cN zcat | mysql -u user -p dbname
+</code></pre><p>In case it fails on your operational system, here&rsquo;s a variation:</p>
+<pre tabindex="0"><code>pv bigdump.sql.gz | gunzip | mysql -u user -p dbname
+</code></pre><p>In case MySQL data is a full dump, the <code>dbname</code> can be ommited.</p>
 
 
             </div>

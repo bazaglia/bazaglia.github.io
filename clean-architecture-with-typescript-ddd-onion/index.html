@@ -1151,457 +1151,392 @@ div.main .content .markdown pre, div.main .content .markdown pre code {
             <div class="markdown">
                 
     
-    
-
-<h2 id="introduction">Introduction</h2>
-
+    <h2 id="introduction">Introduction</h2>
 <p>Writing maintainable code should always be taken into consideration as it is as important as scalability, resilience, and other infrastructure aspects when you have your application running in production. There are many architectural principles that a maintainable code implements, and the source code for the project structure that we will go through in this article is available in a Github repository at the end of the post.</p>
-
 <p>The focus of this article is not to cover big topics like DDD and Onion Architecture, but to provide an example of how to implement these two patterns in TypeScript. While the project used for this example is just an introduction point, you might feel comfortable enhancing it by introducing other concepts inside this architecture such as CQRS.</p>
-
 <h2 id="why-ddd">Why DDD?</h2>
-
 <p>You should write software that implements exactly the business requirements.</p>
-
 <p>It makes it easy to test the domain layer, which means you can ensure all of your business rules are being respected and write long term bug-proof code. DDD together with Onion (covered on next topic) are a consistent way to avoid the cascade effect code, where you change one piece and the side effects are innumerable.</p>
-
 <h2 id="why-onion">Why Onion?</h2>
-
 <p>It plays well with DDD, as everything is built on top of a domain model, which is the first circle in the picture, the most inner one. There are no direct dependencies on external layers in internal ones, just by injection. Plus it is super flexible, as layers have their own responsibilities and input data are validated by each layer according to its needs, meaning inner layers will always receive valid input from outer layers. Not to mention testability: unit tests are way easier as you can use interfaces to provide to your classes mocked dependencies to not rely on external parts of the system such as databases when testing.</p>
-
-<p><figure class="progressive"><img class="progressive__img progressive--not-loaded" data-progressive="https://bazaglia.com/img/onion-architecture.png" src="https://bazaglia.com/img/low/onion-architecture.png" alt="Image of Onion Architecture" /></p></figure>
-
+<p><figure class="progressive"><img class="progressive__img progressive--not-loaded" data-progressive="https://bazaglia.com/img/onion-architecture.png" src="https://bazaglia.com/img/low/onion-architecture.png" alt="Image of Onion Architecture"></p></figure>
 <p>In TypeScript/Javascript, Inversion of Control (by Dependency Injection) means we are injecting/passing things as params instead of importing. In the following code examples, we are going to use a library called Inversify, which allows us to declare dependencies using decorators to create classes that later can have dynamically created containers for resolving their dependencies.</p>
-
 <h2 id="the-architecture">The architecture</h2>
-
 <h3 id="for-this-sample-application">For this sample application&hellip;</h3>
-
 <p>We are building a simple shopping cart application, where there are products (items) that can be added to a shopping cart. The cart may have some business rules, like the minimum/maximum quantity of a unique item.</p>
-
 <p>Let&rsquo;s dive into the layers of the application now, starting from the inner and going to the outer ones, in sequence.</p>
-
 <h2 id="domain">Domain</h2>
-
 <p>The domain layer is basically where all the business rules live. It doesn&rsquo;t know any other layer, therefore, has no dependencies, and is the easiest to test. Even if you change all your application around, the domain is still intact, as all it contains are business rules that anyone can read to understand what is desired by your application. It might also be where you want to start testing.</p>
-
 <p>To implement our domain layer, we start with a base abstract class called Entity, that other domain classes can extend. The reason for that is you can have some logic in the Entity that is common to all of the domain classes. In this example, the common logic is to generate a collision-resistant ID optimized for horizontal scaling, which means for all of our entities, we will use the same strategy.</p>
-
-<pre><code class="language-typescript">export abstract class Entity&lt;T&gt; {
-  protected readonly _id: string;
-  protected props: T;
-
-  constructor(props: T, id?: string) {
-    this._id = id ? id : UniqueEntityID();
-    this.props = props;
-  }
-
-  // other common methods here...
-}
-</code></pre>
-
-<p>With the Entity class already defined in our codebase, we&rsquo;re ready to create our domain class, which is extending the abstract class Entity.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Entity</span>&lt;<span style="color:#f92672">T</span>&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">readonly</span> <span style="color:#a6e22e">_id</span>: <span style="color:#66d9ef">string</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">protected</span> <span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">T</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">constructor</span>(<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">T</span>, <span style="color:#a6e22e">id?</span>: <span style="color:#66d9ef">string</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_id</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">id</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">id</span> : <span style="color:#66d9ef">UniqueEntityID</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">props</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">props</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// other common methods here...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>With the Entity class already defined in our codebase, we&rsquo;re ready to create our domain class, which is extending the abstract class Entity.</p>
 <p>There&rsquo;s nothing too complex in this class, but there are some interesting points you should give a special look at.</p>
-
 <p>First, the constructor is private, which means trying to instantiate a cart with <code>new Cart()</code> would fail, and this is the expected behavior. As we are doing DDD, it is a nice practice to keep the domain class always in a valid state. Instead of directly instantiating an empty Cart object, we are using the Factory design pattern that returns an instance of the Cart class. Some validation could be made to ensure the creation is receiving all the required attributes. Similarly, we have getters and setters to provide all the interactions with the domain, and this is the reason why the class internal attributes/state is in a protected object (called <code>props</code> in this example). All public methods that interact with the domain will operate it according to what is allowed in the domain implementation business rules, guaranteeing its internal properties to always change to a valid state.</p>
-
 <p>After all, the most important thing you should realize here is: <strong>The domain responsibility is to focus on behaviors, not properties.</strong></p>
-
-<pre><code class="language-typescript">export class Cart extends Entity&lt;CartProps&gt; {
-  private _products: CartItem[];
-
-  private constructor({ id, ...data }: CartProps) {
-    super(data, id);
-  }
-
-  public static create(props: CartProps): Cart {
-    const instance = new Cart(props);
-    instance.products = instance.props.rawProducts || [];
-    return instance;
-  }
-
-  public unmarshal(): UnmarshalledCart {
-    return {
-      id: this.id,
-      products: this.products.map((product) =&gt; ({
-        item: product.item.unmarshal(),
-        quantity: product.quantity,
-      })),
-      totalPrice: this.totalPrice,
-    };
-  }
-
-  private static validQuantity(quantity: number) {
-    return quantity &gt;= 1 &amp;&amp; quantity &lt;= 1000;
-  }
-
-  get id(): string {
-    return this._id;
-  }
-
-  get totalPrice(): number {
-    const sum = (acc: number, product: CartItem) =&gt; {
-      return acc + product.item.price * product.quantity;
-    };
-
-    return this.products.reduce(sum, 0);
-  }
-
-  get products(): CartItem[] {
-    return this._products;
-  }
-
-  set products(products: CartItem[] | UnmarshalledCartItem[]) {
-    this._products = products.map((p) =&gt; ({
-      item: p.item instanceof Item ? p.item : Item.create(p.item),
-      quantity: p.quantity,
-    }));
-  }
-
-  public add(item: Item, quantity: number): void {
-    if (!Cart.validQuantity(quantity)) {
-      throw new ValidationError(
-        'SKU needs to have a quantity between 1 and 1000'
-      );
-    }
-
-    const index = this.products.findIndex((p) =&gt; p.item.sku === item.sku);
-
-    if (index &gt; -1) {
-      const product = {
-        ...this.products[index],
-        quantity: this.products[index].quantity + quantity,
-      };
-
-      if (!Cart.validQuantity(product.quantity)) {
-        throw new ValidationError('SKU exceeded allowed quantity');
-      }
-
-      const products = [
-        ...this.products.slice(0, index),
-        product,
-        ...this.products.slice(index + 1),
-      ];
-
-      this.products = products;
-    } else {
-      this.products = [...this.products, { item, quantity }];
-    }
-  }
-
-  public remove(itemId: string): void {
-    const products = this.products.filter(
-      (product) =&gt; product.item.id !== itemId
-    );
-    this.products = products;
-  }
-
-  public empty(): void {
-    this.products = [];
-  }
-}
-</code></pre>
-
-<p>While our Cart object can be operated using the domain methods across the entire application, eventually we might need to unmarshal it to a plain object: where we save it on the database or want to return a JSON response to a client. This can be easily achieved calling the method <code>unmarshall()</code>.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Cart</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">Entity</span>&lt;<span style="color:#f92672">CartProps</span>&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_products</span>: <span style="color:#66d9ef">CartItem</span>[];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">constructor</span>({ <span style="color:#a6e22e">id</span>, ...<span style="color:#a6e22e">data</span> }<span style="color:#f92672">:</span> <span style="color:#a6e22e">CartProps</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">super</span>(<span style="color:#a6e22e">data</span>, <span style="color:#a6e22e">id</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">props</span>: <span style="color:#66d9ef">CartProps</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Cart</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Cart</span>(<span style="color:#a6e22e">props</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">products</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">instance</span>.<span style="color:#a6e22e">props</span>.<span style="color:#a6e22e">rawProducts</span> <span style="color:#f92672">||</span> [];
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">instance</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">unmarshal</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">UnmarshalledCart</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">this.id</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">products</span>: <span style="color:#66d9ef">this.products.map</span>((<span style="color:#a6e22e">product</span>) <span style="color:#f92672">=&gt;</span> ({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">item</span>: <span style="color:#66d9ef">product.item.unmarshal</span>(),
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">quantity</span>: <span style="color:#66d9ef">product.quantity</span>,
+</span></span><span style="display:flex;"><span>      })),
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">totalPrice</span>: <span style="color:#66d9ef">this.totalPrice</span>,
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#a6e22e">validQuantity</span>(<span style="color:#a6e22e">quantity</span>: <span style="color:#66d9ef">number</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">quantity</span> <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">quantity</span> <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">1000</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">get</span> <span style="color:#a6e22e">id</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">string</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_id</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">get</span> <span style="color:#a6e22e">totalPrice</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">number</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sum</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">acc</span>: <span style="color:#66d9ef">number</span>, <span style="color:#a6e22e">product</span>: <span style="color:#66d9ef">CartItem</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">acc</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">product</span>.<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">price</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">product</span>.<span style="color:#a6e22e">quantity</span>;
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span>.<span style="color:#a6e22e">reduce</span>(<span style="color:#a6e22e">sum</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">get</span> <span style="color:#a6e22e">products</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">CartItem</span>[] {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_products</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">set</span> <span style="color:#a6e22e">products</span>(<span style="color:#a6e22e">products</span>: <span style="color:#66d9ef">CartItem</span>[] <span style="color:#f92672">|</span> <span style="color:#a6e22e">UnmarshalledCartItem</span>[]) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_products</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">products</span>.<span style="color:#a6e22e">map</span>((<span style="color:#a6e22e">p</span>) <span style="color:#f92672">=&gt;</span> ({
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">item</span>: <span style="color:#66d9ef">p.item</span> <span style="color:#66d9ef">instanceof</span> <span style="color:#a6e22e">Item</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">p.item</span> : <span style="color:#66d9ef">Item.create</span>(<span style="color:#a6e22e">p</span>.<span style="color:#a6e22e">item</span>),
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">quantity</span>: <span style="color:#66d9ef">p.quantity</span>,
+</span></span><span style="display:flex;"><span>    }));
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">item</span>: <span style="color:#66d9ef">Item</span>, <span style="color:#a6e22e">quantity</span>: <span style="color:#66d9ef">number</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">Cart</span>.<span style="color:#a6e22e">validQuantity</span>(<span style="color:#a6e22e">quantity</span>)) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ValidationError</span>(
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;SKU needs to have a quantity between 1 and 1000&#39;</span>
+</span></span><span style="display:flex;"><span>      );
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">index</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span>.<span style="color:#a6e22e">findIndex</span>((<span style="color:#a6e22e">p</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">p</span>.<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">sku</span> <span style="color:#f92672">===</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">sku</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">index</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">product</span> <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        ...<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span>[<span style="color:#a6e22e">index</span>],
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">quantity</span>: <span style="color:#66d9ef">this.products</span>[<span style="color:#a6e22e">index</span>].<span style="color:#a6e22e">quantity</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">quantity</span>,
+</span></span><span style="display:flex;"><span>      };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">Cart</span>.<span style="color:#a6e22e">validQuantity</span>(<span style="color:#a6e22e">product</span>.<span style="color:#a6e22e">quantity</span>)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ValidationError</span>(<span style="color:#e6db74">&#39;SKU exceeded allowed quantity&#39;</span>);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">products</span> <span style="color:#f92672">=</span> [
+</span></span><span style="display:flex;"><span>        ...<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span>.<span style="color:#a6e22e">slice</span>(<span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">index</span>),
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">product</span>,
+</span></span><span style="display:flex;"><span>        ...<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span>.<span style="color:#a6e22e">slice</span>(<span style="color:#a6e22e">index</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>),
+</span></span><span style="display:flex;"><span>      ];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">products</span>;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span> <span style="color:#f92672">=</span> [...<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span>, { <span style="color:#a6e22e">item</span>, <span style="color:#a6e22e">quantity</span> }];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">remove</span>(<span style="color:#a6e22e">itemId</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">products</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span>.<span style="color:#a6e22e">filter</span>(
+</span></span><span style="display:flex;"><span>      (<span style="color:#a6e22e">product</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">product</span>.<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">id</span> <span style="color:#f92672">!==</span> <span style="color:#a6e22e">itemId</span>
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">products</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">empty</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">products</span> <span style="color:#f92672">=</span> [];
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>While our Cart object can be operated using the domain methods across the entire application, eventually we might need to unmarshal it to a plain object: where we save it on the database or want to return a JSON response to a client. This can be easily achieved calling the method <code>unmarshall()</code>.</p>
 <p>Thinking of flexibility for elegant architectures, the domain layer is also where domain events could be triggered. Event Sourcing might be implemented here, with events being emitted when the domain entity changes.</p>
-
 <h2 id="use-cases">Use cases</h2>
-
 <p>Mainly we will compose our domain methods here, and eventually, use what was injected from the infrastructure layer to persist data.</p>
-
 <p>We are using a library called <code>inversify</code> for enabling Inversion of Control pattern, that is injecting a repository from the infrastructure layer (to be shown later) into this use case. This allow us us to call the domain methods to manipulate the cart, and then persist it in a database by calling the repository methods.</p>
-
-<pre><code class="language-typescript">import { inject, injectable } from 'inversify';
-
-@injectable()
-export class CartService {
-  @inject(TYPES.CartRepository) private repository: CartRepository;
-
-  private async _getCart(id: string): Promise&lt;Cart&gt; {
-    try {
-      const cart = await this.repository.getById(id);
-      return cart;
-    } catch (e) {
-      const emptyCart = Cart.create({ id });
-      return this.repository.create(emptyCart);
-    }
-  }
-
-  public getById(id: string): Promise&lt;Cart&gt; {
-    return this.repository.getById(id);
-  }
-
-  public async add(cartId: string, item: Item, sku: number): Promise&lt;Cart&gt; {
-    const cart = await this._getCart(cartId);
-    cart.add(item, sku);
-
-    return this.repository.update(cart);
-  }
-
-  public async remove(cartId: string, itemId: string): Promise&lt;Cart&gt; {
-    const cart = await this._getCart(cartId);
-    cart.remove(itemId);
-
-    return this.repository.update(cart);
-  }
-
-  public async empty(cartId: string): Promise&lt;Cart&gt; {
-    const cart = await this._getCart(cartId);
-    cart.empty();
-
-    return this.repository.update(cart);
-  }
-}
-</code></pre>
-
-<p>This layer is responsible only for operating the application. Changes made in the code here do not affect/break the entities or external dependencies such as databases.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">inject</span>, <span style="color:#a6e22e">injectable</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;inversify&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">@injectable</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CartService</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">@inject</span>(<span style="color:#a6e22e">TYPES</span>.<span style="color:#a6e22e">CartRepository</span>) <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">repository</span>: <span style="color:#66d9ef">CartRepository</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">_getCart</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">id</span>);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">cart</span>;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">e</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">emptyCart</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Cart</span>.<span style="color:#a6e22e">create</span>({ <span style="color:#a6e22e">id</span> });
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">emptyCart</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">id</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">cartId</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">item</span>: <span style="color:#66d9ef">Item</span>, <span style="color:#a6e22e">sku</span>: <span style="color:#66d9ef">number</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getCart</span>(<span style="color:#a6e22e">cartId</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">item</span>, <span style="color:#a6e22e">sku</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">cart</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">remove</span>(<span style="color:#a6e22e">cartId</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">itemId</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getCart</span>(<span style="color:#a6e22e">cartId</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">remove</span>(<span style="color:#a6e22e">itemId</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">cart</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">empty</span>(<span style="color:#a6e22e">cartId</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getCart</span>(<span style="color:#a6e22e">cartId</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">empty</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">cart</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This layer is responsible only for operating the application. Changes made in the code here do not affect/break the entities or external dependencies such as databases.</p>
 <h2 id="infrastructure">Infrastructure</h2>
-
 <p>The infrastructure layer is responsible for every communication with external systems such as the system state (a database).</p>
-
 <p>The repository might depend on a database client library, and is responsible for manipulating the data in the database/persistence layer. The idea is to first define an interface for the repository operations. The interface can be put together with the domain layer, while its implementation stays in the infrastructure.</p>
-
-<pre><code class="language-typescript">export interface CartRepository {
-  getById(id: string): Promise&lt;Cart&gt;;
-  create(cart: Cart): Promise&lt;Cart&gt;;
-  update(cart: Cart): Promise&lt;Cart&gt;;
-}
-</code></pre>
-
-<p>The repository we will create is going to implement the above interface storing data in the memory. We first create our own class called <code>MemoryData</code> that will implement some basic operations that will be used later by our repository.</p>
-
-<pre><code class="language-typescript">import { injectable } from 'inversify';
-import cuid from 'cuid';
-
-class Collection {
-  private data: Record&lt;string, unknown&gt; = {};
-
-  async findAll&lt;T extends { id: string }&gt;(): Promise&lt;T[]&gt; {
-    return Object.entries(this.data).map(([key, value]) =&gt; ({
-      id: key,
-      ...(value as Record&lt;string, unknown&gt;),
-    })) as T[];
-  }
-
-  async getById&lt;T&gt;(id: string): Promise&lt;T&gt; {
-    return this.data[id] as T;
-  }
-
-  async insert&lt;T extends { id?: string }&gt;(value: T): Promise&lt;T&gt; {
-    this.data[value.id || cuid()] = value;
-    return value;
-  }
-
-  async update&lt;T&gt;(id: string, value: T): Promise&lt;T&gt; {
-    this.data[id] = value;
-    return this.data[id] as T;
-  }
-}
-
-@injectable()
-export class MemoryData {
-  public items = new Collection();
-  public cart = new Collection();
-}
-</code></pre>
-
-<p>With our class that allows us to have a memory-based persistence layer created, we are now ready to use a mapper/repository approach.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">CartRepository</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt;;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">cart</span>: <span style="color:#66d9ef">Cart</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt;;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">cart</span>: <span style="color:#66d9ef">Cart</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt;;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The repository we will create is going to implement the above interface storing data in the memory. We first create our own class called <code>MemoryData</code> that will implement some basic operations that will be used later by our repository.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">injectable</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;inversify&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">cuid</span> <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;cuid&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Collection</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">data</span>: <span style="color:#66d9ef">Record</span>&lt;<span style="color:#f92672">string</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#a6e22e">unknown</span>&gt; <span style="color:#f92672">=</span> {};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">findAll</span>&lt;<span style="color:#f92672">T</span> <span style="color:#a6e22e">extends</span> { <span style="color:#a6e22e">id</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#a6e22e">string</span> }&gt;()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">T</span><span style="color:#960050;background-color:#1e0010">[]</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Object.<span style="color:#a6e22e">entries</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">data</span>).<span style="color:#a6e22e">map</span>(([<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">value</span>]) <span style="color:#f92672">=&gt;</span> ({
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">key</span>,
+</span></span><span style="display:flex;"><span>      ...(<span style="color:#a6e22e">value</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">Record</span>&lt;<span style="color:#f92672">string</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#a6e22e">unknown</span>&gt;),
+</span></span><span style="display:flex;"><span>    })) <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">T</span>[];
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">getById</span>&lt;<span style="color:#f92672">T</span>&gt;(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">T</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">id</span>] <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">T</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">insert</span>&lt;<span style="color:#f92672">T</span> <span style="color:#a6e22e">extends</span> { <span style="color:#a6e22e">id</span><span style="color:#960050;background-color:#1e0010">?:</span> <span style="color:#a6e22e">string</span> }&gt;(<span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">T</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">T</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">id</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">cuid</span>()] <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">value</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">update</span>&lt;<span style="color:#f92672">T</span>&gt;(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">value</span>: <span style="color:#66d9ef">T</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">T</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">value</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">id</span>] <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">T</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">@injectable</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MemoryData</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">items</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Collection</span>();
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Collection</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>With our class that allows us to have a memory-based persistence layer created, we are now ready to use a mapper/repository approach.</p>
 <p>We first create our mapper. It receives the raw database data and handles the transformation to the matching domain class:</p>
-
-<pre><code class="language-typescript">import { Cart, CartItem } from 'src/domain/cart';
-
-const getProducts = (products: UnmarshalledCartItem[]) =&gt; {
-  return products.map((product) =&gt; ({
-    item: product.item,
-    quantity: product.quantity,
-  }));
-};
-
-export class CartMapper {
-  public static toDomain(raw: UnmarshalledCart): Cart {
-    return Cart.create({
-      id: raw.id,
-      rawProducts: getProducts(raw.products || []),
-    });
-  }
-}
-</code></pre>
-
-<p>Then, we are ready to finally create the repository itself, implementing the interface <code>CartRepository</code>, defined by the domain:</p>
-
-<pre><code class="language-typescript">@injectable()
-export class CartMemoryRepository implements CartRepository {
-  @inject(TYPES.Database) private _database: MemoryData;
-
-  async getById(id: string): Promise&lt;Cart&gt; {
-    const cart = await this._database.cart.getById&lt;UnmarshalledCart&gt;(id);
-    if (!cart) {
-      throw new ResourceNotFound('Cart', { id });
-    }
-    return CartMapper.toDomain(cart);
-  }
-
-  async create(cart: Cart): Promise&lt;Cart&gt; {
-    const dtoCart = cart.unmarshal();
-    const inserted = await this._database.cart.insert&lt;UnmarshalledCart&gt;(
-      dtoCart
-    );
-    return CartMapper.toDomain(inserted);
-  }
-
-  async update(cart: Cart): Promise&lt;Cart&gt; {
-    const dtoCart = cart.unmarshal();
-    const updated = await this._database.cart.update&lt;UnmarshalledCart&gt;(
-      cart.id,
-      dtoCart
-    );
-
-    return CartMapper.toDomain(updated);
-  }
-}
-</code></pre>
-
-<p>This repository implementation is also known as a secondary adapter in the Clean Architecture, since it implements an output port (interface).</p>
-
-<h2 id="user-interface-exposure-layer">User interface - exposure layer</h2>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">Cart</span>, <span style="color:#a6e22e">CartItem</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;src/domain/cart&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getProducts</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">products</span>: <span style="color:#66d9ef">UnmarshalledCartItem</span>[]) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">products</span>.<span style="color:#a6e22e">map</span>((<span style="color:#a6e22e">product</span>) <span style="color:#f92672">=&gt;</span> ({
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">item</span>: <span style="color:#66d9ef">product.item</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">quantity</span>: <span style="color:#66d9ef">product.quantity</span>,
+</span></span><span style="display:flex;"><span>  }));
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CartMapper</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#a6e22e">toDomain</span>(<span style="color:#a6e22e">raw</span>: <span style="color:#66d9ef">UnmarshalledCart</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Cart</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Cart</span>.<span style="color:#a6e22e">create</span>({
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">raw.id</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">rawProducts</span>: <span style="color:#66d9ef">getProducts</span>(<span style="color:#a6e22e">raw</span>.<span style="color:#a6e22e">products</span> <span style="color:#f92672">||</span> []),
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Then, we are ready to finally create the repository itself, implementing the interface <code>CartRepository</code>, defined by the domain:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">@injectable</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CartMemoryRepository</span> <span style="color:#66d9ef">implements</span> <span style="color:#a6e22e">CartRepository</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">@inject</span>(<span style="color:#a6e22e">TYPES</span>.<span style="color:#a6e22e">Database</span>) <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_database</span>: <span style="color:#66d9ef">MemoryData</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_database</span>.<span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">getById</span>&lt;<span style="color:#f92672">UnmarshalledCart</span>&gt;(<span style="color:#a6e22e">id</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">cart</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ResourceNotFound</span>(<span style="color:#e6db74">&#39;Cart&#39;</span>, { <span style="color:#a6e22e">id</span> });
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">CartMapper</span>.<span style="color:#a6e22e">toDomain</span>(<span style="color:#a6e22e">cart</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">cart</span>: <span style="color:#66d9ef">Cart</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dtoCart</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">unmarshal</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">inserted</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_database</span>.<span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">insert</span>&lt;<span style="color:#f92672">UnmarshalledCart</span>&gt;(
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">dtoCart</span>
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">CartMapper</span>.<span style="color:#a6e22e">toDomain</span>(<span style="color:#a6e22e">inserted</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">update</span>(<span style="color:#a6e22e">cart</span>: <span style="color:#66d9ef">Cart</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">Cart</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dtoCart</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">unmarshal</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">updated</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_database</span>.<span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">update</span>&lt;<span style="color:#f92672">UnmarshalledCart</span>&gt;(
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">id</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">dtoCart</span>
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">CartMapper</span>.<span style="color:#a6e22e">toDomain</span>(<span style="color:#a6e22e">updated</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This repository implementation is also known as a secondary adapter in the Clean Architecture, since it implements an output port (interface).</p>
+<h2 id="user-interface---exposure-layer">User interface - exposure layer</h2>
 <p>All that is missing now is to expose everything we have created to the external world, through the HTTP protocol. There are many ways to do that, and to simplify things, we are going to use an HTTP middleware based framework.</p>
-
 <p>First, let&rsquo;s define a controller class, that will have our use cases injected as dependencies and pass data received from the HTTP requests to them.</p>
-
-<pre><code class="language-typescript">@injectable()
-export class HTTPController {
-  @inject(TYPES.ItemService) private _itemService: ItemService;
-  @inject(TYPES.CartService) private _cartService: CartService;
-
-  public async listItems(ctx: RouterContext): Promise&lt;void&gt; {
-    const items = await this._itemService.findAll();
-    ctx.body = items.map((item) =&gt; item.unmarshal());
-  }
-
-  public async getItem(ctx: RouterContext): Promise&lt;void&gt; {
-    const item = await this._itemService.getById(ctx.params.id);
-    ctx.body = item.unmarshal();
-  }
-
-  public async createItem(ctx: RouterContext): Promise&lt;void&gt; {
-    const input = validateCreateItem(
-      ctx.request.body as Record&lt;string, unknown&gt;
-    );
-    const item = Item.create(input);
-    const created = await this._itemService.create(item);
-
-    ctx.body = created.unmarshal();
-  }
-
-  public async getCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const cart = await this._cartService.getById(ctx.params.id);
-    ctx.body = cart.unmarshal();
-  }
-
-  public async addToCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const { cartId } = ctx.params;
-    const { itemId, quantity } = validateAddToCart(
-      ctx.request.body as Record&lt;string, unknown&gt;
-    );
-
-    const item = await this._itemService.getById(itemId);
-    const cart = await this._cartService.add(cartId, item, quantity);
-
-    ctx.body = cart.unmarshal();
-  }
-
-  public async removeFromCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const { cartId, itemId } = ctx.params;
-    const cart = await this._cartService.remove(cartId, itemId);
-    ctx.body = cart.unmarshal();
-  }
-
-  public async emptyCart(ctx: RouterContext): Promise&lt;void&gt; {
-    const { cartId } = ctx.params;
-    await this._cartService.empty(cartId);
-    ctx.body = null;
-  }
-}
-</code></pre>
-
-<p>We then need our router class, that will specify the HTTP endpoints that will call the controller methods created above.</p>
-
-<pre><code class="language-typescript">@injectable()
-export class HTTPRouter {
-  @inject(TYPES.HTTPController) private _controller: HTTPController;
-
-  get(): Router {
-    return new Router()
-      .get('/item', (ctx: RouterContext) =&gt; this._controller.listItems(ctx))
-      .get('/item/:id', (ctx: RouterContext) =&gt; this._controller.getItem(ctx))
-      .post('/item', (ctx: RouterContext) =&gt; this._controller.createItem(ctx))
-      .get('/cart/:id', (ctx: RouterContext) =&gt; this._controller.getCart(ctx))
-      .post('/cart/:cartId/item', (ctx: RouterContext) =&gt;
-        this._controller.addToCart(ctx)
-      )
-      .delete('/cart/:cartId/item/:itemId', (ctx: RouterContext) =&gt;
-        this._controller.removeFromCart(ctx)
-      )
-      .post('/cart/:cartId/clean', (ctx: RouterContext) =&gt;
-        this._controller.emptyCart(ctx)
-      );
-  }
-}
-</code></pre>
-
-<p>And, finally, our server class, with a start method, that will start the application at the desired port and get it ready to receive HTTP requests.</p>
-
-<pre><code class="language-typescript">@injectable()
-export class Server {
-  @inject(TYPES.HTTPRouter) private _router: HTTPRouter;
-  @inject(TYPES.Logger) private _logger: Logger;
-
-  start(): void {
-    const router = this._router.get();
-    const logger = this._logger.get();
-    const env = String(process.env);
-
-    router.get('/robots.txt', (ctx) =&gt; {
-      ctx.body = 'User-Agent: *\nDisallow: /';
-    });
-
-    router.get('/health', (ctx) =&gt; {
-      ctx.body = 'OK';
-    });
-
-    const app = new Koa();
-
-    app.use(cors());
-    app.use(bodyParser());
-    app.use(compress());
-
-    app.use(env === 'production' ? errorHandler : devErrorHandler);
-
-    app.use(router.routes());
-
-    app.on('error', (err) =&gt; {
-      if (process.env.NODE_ENV !== 'test') {
-        logger.error(err);
-      }
-    });
-
-    app.listen(3000);
-  }
-}
-</code></pre>
-
-<p>This exposure layer is known as a primary adapter in the Clean Architecture, since it implements an input port, by telling our application what to do.</p>
-
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">@injectable</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">HTTPController</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">@inject</span>(<span style="color:#a6e22e">TYPES</span>.<span style="color:#a6e22e">ItemService</span>) <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_itemService</span>: <span style="color:#66d9ef">ItemService</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">@inject</span>(<span style="color:#a6e22e">TYPES</span>.<span style="color:#a6e22e">CartService</span>) <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_cartService</span>: <span style="color:#66d9ef">CartService</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">listItems</span>(<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">void</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">items</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_itemService</span>.<span style="color:#a6e22e">findAll</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">items</span>.<span style="color:#a6e22e">map</span>((<span style="color:#a6e22e">item</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">unmarshal</span>());
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">getItem</span>(<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">void</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">item</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_itemService</span>.<span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">params</span>.<span style="color:#a6e22e">id</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">unmarshal</span>();
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">createItem</span>(<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">void</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">input</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">validateCreateItem</span>(
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">body</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">Record</span>&lt;<span style="color:#f92672">string</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#a6e22e">unknown</span>&gt;
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">item</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Item</span>.<span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">input</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">created</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_itemService</span>.<span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">item</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">created</span>.<span style="color:#a6e22e">unmarshal</span>();
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">getCart</span>(<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">void</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cartService</span>.<span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">params</span>.<span style="color:#a6e22e">id</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">unmarshal</span>();
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">addToCart</span>(<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">void</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">cartId</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">params</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">itemId</span>, <span style="color:#a6e22e">quantity</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">validateAddToCart</span>(
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">body</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">Record</span>&lt;<span style="color:#f92672">string</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#a6e22e">unknown</span>&gt;
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">item</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_itemService</span>.<span style="color:#a6e22e">getById</span>(<span style="color:#a6e22e">itemId</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cartService</span>.<span style="color:#a6e22e">add</span>(<span style="color:#a6e22e">cartId</span>, <span style="color:#a6e22e">item</span>, <span style="color:#a6e22e">quantity</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">unmarshal</span>();
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">removeFromCart</span>(<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">void</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">cartId</span>, <span style="color:#a6e22e">itemId</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">params</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">cart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cartService</span>.<span style="color:#a6e22e">remove</span>(<span style="color:#a6e22e">cartId</span>, <span style="color:#a6e22e">itemId</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">cart</span>.<span style="color:#a6e22e">unmarshal</span>();
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">emptyCart</span>(<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">void</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">cartId</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">params</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_cartService</span>.<span style="color:#a6e22e">empty</span>(<span style="color:#a6e22e">cartId</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We then need our router class, that will specify the HTTP endpoints that will call the controller methods created above.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">@injectable</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">HTTPRouter</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">@inject</span>(<span style="color:#a6e22e">TYPES</span>.<span style="color:#a6e22e">HTTPController</span>) <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_controller</span>: <span style="color:#66d9ef">HTTPController</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">get</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">Router</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Router</span>()
+</span></span><span style="display:flex;"><span>      .<span style="color:#66d9ef">get</span>(<span style="color:#e6db74">&#39;/item&#39;</span>, (<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controller</span>.<span style="color:#a6e22e">listItems</span>(<span style="color:#a6e22e">ctx</span>))
+</span></span><span style="display:flex;"><span>      .<span style="color:#66d9ef">get</span>(<span style="color:#e6db74">&#39;/item/:id&#39;</span>, (<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controller</span>.<span style="color:#a6e22e">getItem</span>(<span style="color:#a6e22e">ctx</span>))
+</span></span><span style="display:flex;"><span>      .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/item&#39;</span>, (<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controller</span>.<span style="color:#a6e22e">createItem</span>(<span style="color:#a6e22e">ctx</span>))
+</span></span><span style="display:flex;"><span>      .<span style="color:#66d9ef">get</span>(<span style="color:#e6db74">&#39;/cart/:id&#39;</span>, (<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controller</span>.<span style="color:#a6e22e">getCart</span>(<span style="color:#a6e22e">ctx</span>))
+</span></span><span style="display:flex;"><span>      .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/cart/:cartId/item&#39;</span>, (<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>) <span style="color:#f92672">=&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controller</span>.<span style="color:#a6e22e">addToCart</span>(<span style="color:#a6e22e">ctx</span>)
+</span></span><span style="display:flex;"><span>      )
+</span></span><span style="display:flex;"><span>      .<span style="color:#66d9ef">delete</span>(<span style="color:#e6db74">&#39;/cart/:cartId/item/:itemId&#39;</span>, (<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>) <span style="color:#f92672">=&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controller</span>.<span style="color:#a6e22e">removeFromCart</span>(<span style="color:#a6e22e">ctx</span>)
+</span></span><span style="display:flex;"><span>      )
+</span></span><span style="display:flex;"><span>      .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/cart/:cartId/clean&#39;</span>, (<span style="color:#a6e22e">ctx</span>: <span style="color:#66d9ef">RouterContext</span>) <span style="color:#f92672">=&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_controller</span>.<span style="color:#a6e22e">emptyCart</span>(<span style="color:#a6e22e">ctx</span>)
+</span></span><span style="display:flex;"><span>      );
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>And, finally, our server class, with a start method, that will start the application at the desired port and get it ready to receive HTTP requests.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-typescript" data-lang="typescript"><span style="display:flex;"><span><span style="color:#66d9ef">@injectable</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Server</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">@inject</span>(<span style="color:#a6e22e">TYPES</span>.<span style="color:#a6e22e">HTTPRouter</span>) <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_router</span>: <span style="color:#66d9ef">HTTPRouter</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">@inject</span>(<span style="color:#a6e22e">TYPES</span>.<span style="color:#a6e22e">Logger</span>) <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">_logger</span>: <span style="color:#66d9ef">Logger</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">start</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">router</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_router</span>.<span style="color:#66d9ef">get</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">logger</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_logger</span>.<span style="color:#66d9ef">get</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">env</span> <span style="color:#f92672">=</span> String(<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">router</span>.<span style="color:#66d9ef">get</span>(<span style="color:#e6db74">&#39;/robots.txt&#39;</span>, (<span style="color:#a6e22e">ctx</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;User-Agent: *\nDisallow: /&#39;</span>;
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">router</span>.<span style="color:#66d9ef">get</span>(<span style="color:#e6db74">&#39;/health&#39;</span>, (<span style="color:#a6e22e">ctx</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">body</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;OK&#39;</span>;
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Koa</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">cors</span>());
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">bodyParser</span>());
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">compress</span>());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">env</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;production&#39;</span> <span style="color:#f92672">?</span> <span style="color:#a6e22e">errorHandler</span> : <span style="color:#66d9ef">devErrorHandler</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">router</span>.<span style="color:#a6e22e">routes</span>());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;error&#39;</span>, (<span style="color:#a6e22e">err</span>) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">NODE_ENV</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;test&#39;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">logger</span>.<span style="color:#a6e22e">error</span>(<span style="color:#a6e22e">err</span>);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#ae81ff">3000</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This exposure layer is known as a primary adapter in the Clean Architecture, since it implements an input port, by telling our application what to do.</p>
 <h2 id="conclusion">Conclusion</h2>
-
 <p>This is how our folder structure looks like at this point.</p>
-
-<pre><code>.
+<pre tabindex="0"><code>.
 └── src
     ├── api # Layer that exposes application to external world (primary adapters)
     │   └── http # Exposes application over HTTP protocol
@@ -1609,10 +1544,7 @@ export class Server {
     ├── domain # Business domain classes and everything that composes domain model
     ├── infra # Communication with what is external of application
     └── libs # Common functionalities
-</code></pre>
-
-<p>All the code above was just written for demonstration purposes, and it is, in my opinion, an excellent starting point for a simple yet flexible Clean Architecture implementation in TypeScript.</p>
-
+</code></pre><p>All the code above was just written for demonstration purposes, and it is, in my opinion, an excellent starting point for a simple yet flexible Clean Architecture implementation in TypeScript.</p>
 <p>The source code for this project is available at <a href="https://github.com/bazaglia/shopping-cart">Github</a>.</p>
 
 
