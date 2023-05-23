@@ -749,6 +749,16 @@ kbd {
 }
 
 
+/*
+Fixes iOS code block font sizing anomaly
+https://github.com/adityatelange/hugo-PaperMod/issues/828#issuecomment-1171994855
+*/
+code {
+  text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
 </style>
 <style media="(min-width: 600px)">
   body {

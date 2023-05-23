@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>terminal on André Bazaglia</title>
@@ -6,11 +6,7 @@
     <description>Recent content in terminal on André Bazaglia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sat, 05 Jan 2019 00:00:00 +0000</lastBuildDate>
-    
-	<atom:link href="https://bazaglia.com/tags/terminal/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 05 Jan 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://bazaglia.com/tags/terminal/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>List all files containing a string from Terminal</title>
       <link>https://bazaglia.com/list-all-files-containing-a-string-from-terminal/</link>
