@@ -29,17 +29,12 @@
 
 
 
-<link rel="stylesheet" href="https://bazaglia.com/main.min.ca453826c3bad03346adf9691a9aab7c46d4510591afdaa485785b7635fdce47.css" integrity="sha256-ykU4JsO60DNGrflpGpqrfEbUUQWRr9qkhXhbdjX9zkc=" media="screen">
+<link rel="stylesheet" href="https://bazaglia.com/main.min.ac35c2bbecbd4339a7398d529f7626aafce3caf8f419074904cbcc8055bd8875.css" integrity="sha256-rDXCu&#43;y9QzmnOY1Sn3Ymqvzjyvj0GQdJBMvMgFW9iHU=" media="screen">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300;1,700&family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
 
-
-  <style type="text/css" media="screen">
-    .progressive{overflow:hidden;position:relative;background:#efefef}.progressive__img{width:100%;height:100%;transform:translateZ(0)}.progressive--not-loaded{filter:blur(30px)}.progressive--is-loaded{filter:blur(20px);animation:a .5s both}@keyframes a{0%{filter:blur(20px)}to{filter:blur(0)}}
-
-  </style>
 
 
 
@@ -151,7 +146,6 @@
             </div>
             <div class="markdown">
                 
-    
     <h2 id="introduction">Introduction</h2>
 <p>Writing maintainable code should always be taken into consideration as it is as important as scalability, resilience, and other infrastructure aspects when you have your application running in production. There are many architectural principles that a maintainable code implements, and the source code for the project structure that we will go through in this article is available in a Github repository at the end of the post.</p>
 <p>The focus of this article is not to cover big topics like DDD and Onion Architecture, but to provide an example of how to implement these two patterns in TypeScript. While the project used for this example is just an introduction point, you might feel comfortable enhancing it by introducing other concepts inside this architecture such as CQRS.</p>
@@ -160,7 +154,7 @@
 <p>It makes it easy to test the domain layer, which means you can ensure all of your business rules are being respected and write long term bug-proof code. DDD together with Onion (covered on next topic) are a consistent way to avoid the cascade effect code, where you change one piece and the side effects are innumerable.</p>
 <h2 id="why-onion">Why Onion?</h2>
 <p>It plays well with DDD, as everything is built on top of a domain model, which is the first circle in the picture, the most inner one. There are no direct dependencies on external layers in internal ones, just by injection. Plus it is super flexible, as layers have their own responsibilities and input data are validated by each layer according to its needs, meaning inner layers will always receive valid input from outer layers. Not to mention testability: unit tests are way easier as you can use interfaces to provide to your classes mocked dependencies to not rely on external parts of the system such as databases when testing.</p>
-<p><figure class="progressive"><img class="progressive__img progressive--not-loaded" data-progressive="https://bazaglia.com/img/onion-architecture.png" src="https://bazaglia.com/img/low/onion-architecture.png" alt="Image of Onion Architecture"></p></figure>
+<p><img src="https://bazaglia.com/img/onion-architecture.png" alt="Image of Onion Architecture"></p>
 <p>In TypeScript/Javascript, Inversion of Control (by Dependency Injection) means we are injecting/passing things as params instead of importing. In the following code examples, we are going to use a library called Inversify, which allows us to declare dependencies using decorators to create classes that later can have dynamically created containers for resolving their dependencies.</p>
 <h2 id="the-architecture">The architecture</h2>
 <h3 id="for-this-sample-application">For this sample application&hellip;</h3>
@@ -650,8 +644,6 @@
 </div>
 
 
-  <script src="https://bazaglia.com/js/progressively.min.js" defer></script>
-
 
 
   <script src="https://bazaglia.com/js/social-share-kit.min.js" defer></script>
@@ -661,8 +653,6 @@
 
 <script>
   window.onload = function() {
-    
-      progressively.init({delay: 30, throttle: 50});
     
     
       SocialShareKit.init({
